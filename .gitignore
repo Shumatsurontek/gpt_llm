@@ -14,3 +14,26 @@ artifacts/tokenizer.json
 #docs
 docs/
 
+#wandb
+wandb/
+
+#logs
+logs/
+
+#data
+data/
+
+#artifacts
+artifacts/
+
+#env
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+#cursor
+.cursorrules
+.cursorignore
+.cursorignore

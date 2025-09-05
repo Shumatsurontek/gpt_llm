@@ -34,7 +34,7 @@ device: mps
 ckpt_dir: artifacts/checkpoints
 
 # Logging
-wandb_enabled: false
+wandb_enabled: true
 wandb_project: llm-scratch
 wandb_run_name: null
 

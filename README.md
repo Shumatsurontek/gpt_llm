@@ -78,6 +78,27 @@ python scripts/train.py --config configs/base.yaml
 ```
 Les métriques `train/loss`, `val/loss`, `lr` et les checkpoints sont loggés.
 
+### Presets de config
+- CPU léger:
+```bash
+python scripts/train.py --config configs/base.cpu.yaml
+```
+- W&B activé (définir `wandb login` ou `WANDB_API_KEY`):
+```bash
+python scripts/train.py --config configs/base.wandb.yaml
+```
+
+### Conventions Git (Conventional Commits)
+- Modèle: `type(scope): subject` (types: feat, fix, refactor, perf, docs, style, test, build, chore, ci)
+- Template activé: `.gitmessage`
+- Hook activé: `.git-hooks/commit-msg` (bloque si format invalide)
+
+Configurer (déjà fait par script):
+```bash
+git config commit.template .gitmessage
+git config core.hooksPath .git-hooks
+```
+
 ## Génération
 ```bash
 python scripts/generate.py --ckpt artifacts/checkpoints/step_1000.pt --tokenizer artifacts/tokenizer.json --prompt "To be, or not to be" --max_new_tokens 100

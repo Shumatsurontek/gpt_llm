@@ -28,6 +28,6 @@ seed: 42
 device: cpu
 ckpt_dir: artifacts/checkpoints
 
-wandb_enabled: false
+wandb_enabled: true
 wandb_project: llm-scratch
 wandb_run_name: null
