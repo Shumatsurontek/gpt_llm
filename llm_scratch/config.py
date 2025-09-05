@@ -30,7 +30,9 @@ class TrainConfig:
     ffn_mult: int = 4
     max_seq_len: int = 256
     norm: str = "layernorm"
-    use_rel_bias: bool = True
+    use_rel_bias: bool = False
+    use_rope: bool = True
+    local_window: int | None = 256
     tie_weights: bool = True
 
     # optim
@@ -48,7 +50,7 @@ class TrainConfig:
     ckpt_dir: str = "artifacts/checkpoints"
 
     # logging
-    wandb_project: str | "llm_scratch" = None  # e.g., "llm_scratch"
+    wandb_project: str | None = None  # e.g., "llm-scratch"
     wandb_run_name: str | None = None
     wandb_enabled: bool = False
 

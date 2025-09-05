@@ -107,11 +107,13 @@ def main():
         n_layers=cfg.n_layers,
         n_heads=cfg.n_heads,
         max_seq_len=cfg.max_seq_len,
+        local_window=cfg.local_window,
         dropout=cfg.dropout,
         attn_dropout=cfg.attn_dropout,
         ffn_mult=cfg.ffn_mult,
         norm=cfg.norm,
         use_rel_bias=cfg.use_rel_bias,
+        use_rope=cfg.use_rope,
         tie_weights=cfg.tie_weights,
     )).to(device)
     logger.info("Model params: %d", _count_parameters(model))
