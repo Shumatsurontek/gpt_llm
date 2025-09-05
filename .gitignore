@@ -1,0 +1,16 @@
+# Ignore Python/macos artifacts
+.venv/
+__pycache__/
+*.pyc
+.DS_Store
+
+#checkpoints
+artifacts/checkpoints/*.pt
+artifacts/tokenizer.json
+
+#weights and biases
+*.pt
+
+#docs
+docs/
+
