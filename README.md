@@ -1,4 +1,4 @@
-# llm-scratch — A Minimal, Reproducible RoPE LLM (CPU/MPS First)
+# LLM-Scratch — A Minimal, Reproducible RoPE LLM (CPU/MPS First)
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/release/python-3110/) [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
