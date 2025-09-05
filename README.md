@@ -1,111 +1,126 @@
-# LLM from scratch
+# llm-scratch — A Minimal, Reproducible RoPE LLM (CPU/MPS First)
 
-Projet éducatif pour entraîner un petit LLM en Python 3.11, basé sur:
-- Tokenizer BPE minimal (option “from scratch”)
-- Transformer causal avec attention locale + biais positionnel relatif
-- GLU-FFN avec SiLU, pré-norm
-- Entraînement sur Mac (MPS) ou CPU/GPU selon disponibilité
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/release/python-3110/) [![PyTorch](https://img.shields.io/badge/PyTorch-2.x-EE4C2C.svg)](https://pytorch.org/) [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
 
-Attention: ce repo vise la clarté; ce n’est pas une implémentation ultra-optimisée.
+Educational, open-source LLM built for clarity and CPU/MPS-first training. Features:
+- RoPE positional encoding (no absolute pos-emb)
+- Local causal attention via PyTorch SDPA (memory-friendly)
+- SwiGLU MLP, RMSNorm, pre-norm transformer blocks
+- BPE tokenizer (8k vocab) with simple training pipeline
+- Structured logging + optional W&B (never hard-fails)
 
-## Prérequis
-- Python 3.11 (préféré)
-- macOS Apple Silicon (MPS) recommandé (M4 Pro 48GB OK)
+This repo aims for readable, strongly-typed Python with small functions and clean configs. Perfect for learning, tinkering, and extending.
 
-## Installation
+## Quickstart
 ```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
+python3.11 -m venv .venv && source .venv/bin/activate
 pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-PyTorch détectera automatiquement MPS si disponible.
-
-## Données de démo (Tiny Shakespeare)
+Prepare demo data (Tiny Shakespeare):
 ```bash
 python scripts/prepare_tinyshakespeare.py --out_dir data
 ```
 
-## Tokenizer (BPE minimal)
-Entraînement et sauvegarde du tokenizer:
+Train tokenizer (8k vocab):
 ```bash
-python scripts/train_tokenizer.py --input data/tiny_shakespeare.txt --out artifacts/tokenizer.json --vocab_size 8000
+python scripts/train_tokenizer.py --input data/tiny_shakespeare.txt \
+  --out artifacts/tokenizer.json --vocab_size 8000
 ```
 
-## Préparation des IDs (tokenisation)
+Build token IDs (train/val):
 ```bash
 python - <<'PY'
 from pathlib import Path
 import torch
 from llm_scratch.tokenizer.bpe import BPETokenizer
-
 inp = Path('data/tiny_shakespeare.txt').read_text(encoding='utf-8')
 tok = BPETokenizer.load('artifacts/tokenizer.json')
 ids = tok.encode(inp, add_bos=True)
-# split 90/10
 t = torch.tensor(ids, dtype=torch.long)
 n = int(0.9 * len(t))
-train, val = t[:n], t[n:]
 Path('data').mkdir(exist_ok=True)
-torch.save(train, 'data/train_ids.pt')
-torch.save(val, 'data/val_ids.pt')
-print('Saved token ids to data/train_ids.pt and data/val_ids.pt')
+torch.save(t[:n], 'data/train_ids.pt')
+torch.save(t[n:], 'data/val_ids.pt')
+print('✓ wrote data/train_ids.pt and data/val_ids.pt')
 PY
 ```
 
-## Entraînement
-Adapter configs/base.yaml au besoin puis:
+Train (default config):
 ```bash
 python scripts/train.py --config configs/base.yaml
 ```
 
-### Suivi Weights & Biases (optionnel)
-- Dépendance ajoutée: `wandb`
-- Activer dans `configs/base.yaml`:
+Generate:
+```bash
+python scripts/generate.py \
+  --ckpt artifacts/checkpoints/step_1000.pt \
+  --tokenizer artifacts/tokenizer.json \
+  --prompt "To be, or not to be" --max_new_tokens 100
+```
+
+## Generic Corpus (Hugging Face / folders / globs)
+Tokenizer training with dirs/globs:
+```bash
+python scripts/train_tokenizer.py \
+  --input /path/corpus_dir "/path/books/**/*.txt" /path/one.txt \
+  --out artifacts/tokenizer.json --vocab_size 8000
+```
+IDs from arbitrary text:
+```bash
+python scripts/prepare_corpus_ids.py \
+  --inputs /path/corpus_dir "/path/books/**/*.txt" \
+  --tokenizer artifacts/tokenizer.json \
+  --out_dir data --val_ratio 0.1 --add_bos
+```
+
+## Config Presets
+- CPU light: `configs/base.cpu.yaml` (smaller model, CPU-friendly)
+- Medium ~160M: `configs/base.160m.yaml` (ctx 2k)
+- Large ~400M: `configs/base.400m.yaml` (ctx 2k, local_window 1k, RMSNorm)
+
+Switch config:
+```bash
+python scripts/train.py --config configs/base.400m.yaml
+```
+
+## Weights & Biases (optional)
+Enable in YAML or via env vars:
 ```yaml
 wandb_enabled: true
 wandb_project: llm-scratch
 wandb_run_name: "run-local"
 ```
-- Connectez-vous une fois:
 ```bash
 wandb login
-```
-- Lancement:
-```bash
 python scripts/train.py --config configs/base.yaml
 ```
-Les métriques `train/loss`, `val/loss`, `lr` et les checkpoints sont loggés.
 
-### Presets de config
-- CPU léger:
-```bash
-python scripts/train.py --config configs/base.cpu.yaml
+## Project Structure
 ```
-- W&B activé (définir `wandb login` ou `WANDB_API_KEY`):
-```bash
-python scripts/train.py --config configs/base.wandb.yaml
-```
-
-### Conventions Git (Conventional Commits)
-- Modèle: `type(scope): subject` (types: feat, fix, refactor, perf, docs, style, test, build, chore, ci)
-- Template activé: `.gitmessage`
-- Hook activé: `.git-hooks/commit-msg` (bloque si format invalide)
-
-Configurer (déjà fait par script):
-```bash
-git config commit.template .gitmessage
-git config core.hooksPath .git-hooks
+llm_scratch/
+  data/           # dataset utilities
+  model/          # blocks + GPT model
+  tokenizer/      # BPE
+  utils/          # sampling, helpers
+scripts/           # train, generate, tokenizer, data prep
+configs/           # training presets
+docs/              # paper.md / paper.tex
 ```
 
-## Génération
-```bash
-python scripts/generate.py --ckpt artifacts/checkpoints/step_1000.pt --tokenizer artifacts/tokenizer.json --prompt "To be, or not to be" --max_new_tokens 100
-```
+## Paper / Docs
+- Obsidian: `docs/paper.md`
+- LaTeX: `docs/paper.tex` (build with `tectonic -o docs docs/paper.tex`)
 
-## Notes
-- L’attention locale réduit le coût mémoire/temps vs dense. Pour de très longues séquences, augmentez `max_seq_len` avec prudence.
-- Le tokenizer BPE ici est volontairement simple. Pour la production, envisagez `sentencepiece` (Unigram) ou `tokenizers`.
-- Activez RMSNorm via `norm: rmsnorm` dans la config si souhaité.
+## Contributing
+PRs welcome! Please:
+- follow Conventional Commits (e.g., `feat(tokenizer): ...`),
+- keep functions small with full type hints,
+- add structured logs where it helps diagnosis.
 
+## License
+MIT — see `LICENSE` (feel free to use/modify; contributions are welcome).
+
+## Acknowledgments
+Thanks to the open-source community for making CPU/MPS-friendly LLM research practical.
