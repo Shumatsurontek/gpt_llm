@@ -1,0 +1,33 @@
+vocab_size: 8000
+train_ids: data/train_ids.pt
+val_ids: data/val_ids.pt
+seq_len: 256
+
+tokenizer_path: artifacts/tokenizer.json
+
+dim: 512
+n_layers: 8
+n_heads: 8
+dropout: 0.1
+attn_dropout: 0.1
+ffn_mult: 4
+max_seq_len: 256
+norm: layernorm
+use_rel_bias: true
+tie_weights: true
+
+lr: 0.0003
+weight_decay: 0.01
+betas: [0.9, 0.95]
+warmup_steps: 200
+max_steps: 200
+grad_clip: 1.0
+batch_size: 32
+
+seed: 42
+device: mps
+ckpt_dir: artifacts/checkpoints
+
+wandb_enabled: true
+wandb_project: llm-scratch
+wandb_run_name: local-test

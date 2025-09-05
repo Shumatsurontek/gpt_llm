@@ -6,7 +6,6 @@ import math
 import os
 from pathlib import Path
 import logging
-import wandb
 import sys
 from typing import Any, Dict
 
@@ -88,13 +87,16 @@ def main():
 
     # wandb
     wandb_run = None
-    if cfg.wandb_enabled and cfg.wandb_project:
+    wandb_project = cfg.wandb_project or os.environ.get("WANDB_PROJECT")
+    wandb_run_name = cfg.wandb_run_name or os.environ.get("WANDB_RUN_NAME")
+    if cfg.wandb_enabled and wandb_project:
         try:
-            wandb_run = wandb.init(project=cfg.wandb_project, name=cfg.wandb_run_name, config={
+            import wandb  # lazy import
+            wandb_run = wandb.init(project=wandb_project, name=wandb_run_name, config={
                 "config_path": str(args.config),
                 **{k: getattr(cfg, k) for k in cfg.__dict__.keys() if not k.startswith("__")}
             })
-            logger.info("wandb: initialized project=%s run=%s", cfg.wandb_project, wandb_run.name if wandb_run else "-")
+            logger.info("wandb: initialized project=%s run=%s", wandb_project, wandb_run.name if wandb_run else "-")
         except Exception as e:
             logger.warning("wandb initialization failed: %s", e)
 

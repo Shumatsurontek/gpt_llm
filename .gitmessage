@@ -1,0 +1,16 @@
+# Conventional Commit Template
+# type(scope): short imperative subject
+#
+# Body:
+# - What and why (wrap at ~72 cols)
+# - Context and trade-offs
+#
+# Footer:
+# - BREAKING CHANGE: description
+# - Closes: #issue-id
+
+feat(scope): short summary
+
+Body line explaining the change rationale and impact.
+
+Closes: 

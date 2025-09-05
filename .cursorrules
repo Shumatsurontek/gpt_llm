@@ -1,0 +1,79 @@
+Project: LLM from scratch (llm-scratch)
+
+Goals:
+- Minimal, readable code runnable on CPU/Mac (MPS) first
+- Strong typing, small functions (<20 lines), early returns
+- Clear logging + optional Weights & Biases tracking
+
+Code Style:
+- Python 3.11+, type hints everywhere
+- Prefer dataclasses over dicts (use __slots__ where useful)
+- Prefer pathlib over os.path
+- Use match when clearer than if/elif
+- Descriptive names; avoid 1–2 letter identifiers
+- One class per file when practical; group related functions by module
+- No print() for logging; use logging
+- No verbose comments; code should be self-explanatory
+
+Architecture:
+- Dependency injection over globals
+- Factory pattern for object creation
+- Repository pattern for data access (when applicable)
+- Prefer composition over inheritance
+- Service layer for orchestration logic (not in endpoints)
+
+Error Handling:
+- Use specific exceptions (never bare Exception)
+- Re-raise with context: raise X from e
+- Log errors with context; fail fast with clear messages
+- Only catch where you can handle
+
+Testing:
+- Mock external deps, not internal logic
+- Test behavior, not implementation
+- Use pytest fixtures; parameterize when possible
+- Keep tests close to code (same file unless large)
+
+Performance:
+- Use async for I/O-bound work
+- Cache expensive computations
+- Use generators for large datasets
+- Profile before optimizing; avoid premature optimization
+
+Generation Rules (Cursor):
+- Generate working code immediately with imports fixed
+- Integrate with existing structure; no TODO placeholders
+- No globals; avoid Any unless unavoidable
+- Keep functions small; prefer early returns
+- Maintain existing indentation style
+
+Logging & Training:
+- Structured logging (time | level | logger | message)
+- Log config, device, token counts, parameter count
+- Log step, train loss, lr every 10; val every 50; checkpoints every 200
+- Tokenizer logs corpus size and merge progress every 100 merges
+- W&B optional; guard all calls and never hard-fail if absent
+
+Scripts:
+- Ensure project root added to sys.path for direct execution
+- Default to CPU/MPS; avoid CUDA assumptions
+- Use absolute paths in examples/commands
+
+Commit Conventions (Conventional Commits):
+- Types: feat, fix, refactor, perf, docs, style, test, build, chore, ci
+- Format: type(scope): short imperative subject
+- Body: ~72 cols; explain what/why
+- Footer: breaking changes and issue refs
+- Examples:
+  - feat(tokenizer): add progress logging during BPE merges
+  - fix(train): correct dataset size logging to use N
+
+PR Rules:
+- Title mirrors top commit summary
+- Description: problem, solution, logs, risks, test plan
+
+LLM Guidance (Cursor):
+- Be concise; show code, avoid unnecessary prose
+- Don’t generate binaries or huge JSON in chat
+- Confirm assumptions quickly; prefer small, safe edits
+- Parallelize multi-file reads

@@ -1,0 +1,24 @@
+#!/bin/sh
+# Enforce Conventional Commits: type(scope): subject
+# Allowed types
+TYPES="feat|fix|refactor|perf|docs|style|test|build|chore|ci"
+
+commit_msg_file="$1"
+first_line=$(head -n1 "$commit_msg_file")
+
+# allow merge/revert commits
+case "$first_line" in
+  Merge\ *|Revert\ *)
+    exit 0 ;;
+  *) ;;
+ esac
+
+# regex: type(scope?): subject
+# scope optional: type: subject OR type(scope): subject
+if echo "$first_line" | grep -Eq "^($TYPES)(\([a-z0-9_-]+\))?: .+"; then
+  exit 0
+else
+  echo "\nInvalid commit message. Use: type(scope): subject" >&2
+  echo "Allowed types: $TYPES" >&2
+  exit 1
+fi
